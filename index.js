@@ -34,18 +34,37 @@
 
 const express = require('express');
 const { resolve } = require('path');
+const fs = require("fs")
 
 const app = express();
-const port = 3010;
+const port = 3001;
 
 app.use(express.static('static'));
+app.use(express.json())
 
 app.get('/', (req, res) => {
   res.sendFile(resolve(__dirname, 'pages/index.html'));
 });
 
+app.post("/students/above-threshold", (req, res)=>{
+  const { threshold } = req.body;
+  const data = fs.readFileSync('data.json', 'utf8');
+  const students = JSON.parse(data);
+
+  const filteredStudents = students
+  .filter(student => student.total > threshold)
+  .map(student => ({
+    name: student.name,
+    total: student.total
+  }));
+
+  res.json({
+    count: filteredStudents.length,
+    students: filteredStudents
+  });
+  
+})
+
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
 });
-
-
